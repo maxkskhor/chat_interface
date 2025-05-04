@@ -71,9 +71,6 @@ def chat_stream(message, history):
                     reasoning_content += chunk.choices[0].delta.reasoning_content
                     yield reasoning_content
 
-                # if not content:
-                #     content = reasoning_content
-
                 if chunk.choices[0].delta.content:
                     content += chunk.choices[0].delta.content
                     yield reasoning_content + "[/think]" + content
@@ -86,7 +83,7 @@ def chat_stream(message, history):
 
 
 # --- Streaming Chat Function ---
-def chat_stream_2(message, history):
+def chat_stream_with_thinking_box(message, history):
     """
     Send a message to DeepSeek API and stream the response.
 
@@ -120,19 +117,19 @@ def chat_stream_2(message, history):
         # Initialize the response text
         reasoning_content = ""
         content = ""
+        elapsed_thinking = 0
 
         start_thinking = time.time()
         for chunk in stream:
             if chunk.choices:
                 if chunk.choices[0].delta.reasoning_content:
                     reasoning_content += chunk.choices[0].delta.reasoning_content
+                    elapsed_thinking = time.time() - start_thinking
                     yield [
                         {"role": "assistant",
                          "content": reasoning_content,
                          "metadata": {"title":  "🧠 Thinking", "status": "pending"}}
                     ]
-
-                elapsed_thinking = time.time() - start_thinking
                 if chunk.choices[0].delta.content:
                     content += chunk.choices[0].delta.content
                     yield [
@@ -151,13 +148,14 @@ def chat_stream_2(message, history):
 
 # --- Gradio Interface ---
 demo = gr.ChatInterface(
-    chat_stream_2,
+    chat_stream_with_thinking_box,
     type='messages',
     title="Thinking Chatbot",
-    description="Chat with DeepSeek Reasoning Model.",
+    description="Chat with Reasoning Model.",
     examples=["Hello",
               "Can you write a short poem about technology?",
               "Explain quantum computing in simple terms"],
+    run_examples_on_click=False,
     # example_labels=["eg1", "eg2", "eg3"],
     save_history=True,
     flagging_mode='manual',
@@ -166,5 +164,5 @@ demo = gr.ChatInterface(
 
 # --- Run the app ---
 if __name__ == "__main__":
-    logger.info("Starting DeepSeek Chat interface with streaming...")
+    logger.info("Starting Chat interface with reasoning model...")
     demo.launch()  # Set share=False if you don't want a public URL
