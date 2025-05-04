@@ -6,6 +6,30 @@ from dotenv import load_dotenv
 from loguru import logger
 from openai import OpenAI
 
+from gradio import ChatInterface
+
+
+class SideBarChatInterface(ChatInterface):
+    """
+    Chat Interface with history in the sidebar
+    """
+    def _render_history_area(self):
+        with gr.Sidebar():
+            gr.Markdown('# Chat AI')
+            self.new_chat_button = gr.Button(
+                "New chat",
+                variant="primary",
+                size="md",
+                icon=gr.utils.get_icon_path("plus.svg"),
+                # scale=0,
+            )
+            self.chat_history_dataset = gr.components.Dataset(
+                components=[gr.Textbox(visible=False)],
+                show_label=False,
+                layout="table",
+                type="index",
+            )
+
 # Load environment variables from .env file
 # Make sure you have a .env file with DEEPSEEK_API_KEY=your_key
 load_dotenv()
@@ -147,7 +171,7 @@ def chat_stream_with_thinking_box(message, history):
 
 
 # --- Gradio Interface ---
-demo = gr.ChatInterface(
+chat_interface = SideBarChatInterface(
     chat_stream_with_thinking_box,
     type='messages',
     title="Thinking Chatbot",
@@ -165,4 +189,4 @@ demo = gr.ChatInterface(
 # --- Run the app ---
 if __name__ == "__main__":
     logger.info("Starting Chat interface with reasoning model...")
-    demo.launch()  # Set share=False if you don't want a public URL
+    chat_interface.launch()  # Set share=False if you don't want a public URL
