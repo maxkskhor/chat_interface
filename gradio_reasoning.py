@@ -3,16 +3,43 @@ import time
 
 import gradio as gr
 from dotenv import load_dotenv
+from gradio import ChatInterface
 from loguru import logger
 from openai import OpenAI
-
-from gradio import ChatInterface
 
 
 class SideBarChatInterface(ChatInterface):
     """
     Chat Interface with history in the sidebar
     """
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #
+    #     with self:
+    #         self.saved_conversations = BrowserState(
+    #             [], storage_key=f"_saved_conversations_{self._id}"
+    #         )
+    #         self.conversation_id = State(None)
+    #         self.saved_input = State()  # Stores the most recent user message
+    #         self.null_component = State()  # Used to discard unneeded values
+    #
+    #         with Column():
+    #             self._render_header()
+    #             if self.save_history:
+    #                 with Row(scale=1):
+    #                     self._render_history_area()
+    #                     with Column(scale=6):
+    #                         self._render_chatbot_area(
+    #                             chatbot, textbox, submit_btn, stop_btn
+    #                         )
+    #                         self._render_footer()
+    #             else:
+    #                 self._render_chatbot_area(chatbot, textbox, submit_btn, stop_btn)
+    #                 self._render_footer()
+    #
+    #         self._setup_events()
+
+
     def _render_history_area(self):
         with gr.Sidebar():
             gr.Markdown('# Chat AI')
@@ -122,7 +149,10 @@ def chat_stream_with_thinking_box(message, history):
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
     for i in history:
-        messages.append(i)
+        if 'metadata' in i:
+            pass
+        else:
+            messages.append(i)
 
     # Add the current message
     messages.append({"role": "user", "content": message})
