@@ -12,34 +12,6 @@ class SideBarChatInterface(ChatInterface):
     """
     Chat Interface with history in the sidebar
     """
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #
-    #     with self:
-    #         self.saved_conversations = BrowserState(
-    #             [], storage_key=f"_saved_conversations_{self._id}"
-    #         )
-    #         self.conversation_id = State(None)
-    #         self.saved_input = State()  # Stores the most recent user message
-    #         self.null_component = State()  # Used to discard unneeded values
-    #
-    #         with Column():
-    #             self._render_header()
-    #             if self.save_history:
-    #                 with Row(scale=1):
-    #                     self._render_history_area()
-    #                     with Column(scale=6):
-    #                         self._render_chatbot_area(
-    #                             chatbot, textbox, submit_btn, stop_btn
-    #                         )
-    #                         self._render_footer()
-    #             else:
-    #                 self._render_chatbot_area(chatbot, textbox, submit_btn, stop_btn)
-    #                 self._render_footer()
-    #
-    #         self._setup_events()
-
-
     def _render_history_area(self):
         with gr.Sidebar():
             gr.Markdown('# Chat AI')
@@ -78,59 +50,6 @@ try:
 except Exception as e:
     logger.error(f"Error initializing OpenAI client: {e}")
     exit()
-
-
-# --- Streaming Chat Function ---
-def chat_stream(message, history):
-    """
-    Send a message to DeepSeek API and stream the response.
-
-    Args:
-        message (str): Current user message
-        history (list): List of [user_message, bot_message] pairs
-
-    Yields:
-        str: Streamed fragments of the response
-    """
-    # Format the conversation history for the API
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-
-    for i in history:
-        messages.append(i)
-
-    # Add the current message
-    messages.append({"role": "user", "content": message})
-
-    try:
-        # Call the API with streaming enabled
-        # noinspection PyTypeChecker
-        stream = client.chat.completions.create(
-            model=MODEL,
-            messages=messages,
-            temperature=0.7,  # Adjust creativity (0.0 to 1.0)
-            max_tokens=1000,  # Maximum length of response
-            stream=True  # Enable streaming
-        )
-
-        # Initialize the response text
-        reasoning_content = "[think]"
-        content = ""
-
-        for chunk in stream:
-            if chunk.choices:
-                if chunk.choices[0].delta.reasoning_content:
-                    reasoning_content += chunk.choices[0].delta.reasoning_content
-                    yield reasoning_content
-
-                if chunk.choices[0].delta.content:
-                    content += chunk.choices[0].delta.content
-                    yield reasoning_content + "[/think]" + content
-
-        logger.info(f'reasoning_content: {reasoning_content}')
-        logger.info(f'content: {content}')
-
-    except Exception as e_:
-        yield f"An error occurred: {str(e_)}"
 
 
 # --- Streaming Chat Function ---

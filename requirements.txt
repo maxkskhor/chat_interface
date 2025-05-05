@@ -2,3 +2,9 @@ openai
 python-dotenv
 gradio
 loguru
+tabulate
+matplotlib
+requests
+fastmcp
+mcp
+anthropic
